@@ -15,6 +15,12 @@ public class Tienda extends javax.swing.JFrame {
      */
     public Tienda() {
         initComponents();
+        // Hacer la ventana no redimensionable
+        this.setResizable(false);
+        // Establecer el tamaño de la ventana 
+        this.setSize(800, 600);
+        // Centrar la ventana en la pantalla
+        this.setLocationRelativeTo(null);
     }
 
     /**
@@ -140,14 +146,26 @@ public class Tienda extends javax.swing.JFrame {
 
     private void ProductosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ProductosActionPerformed
         // TODO add your handling code here:
+        // Crear una instancia del JFrame Productos
+        Productos productosFrame = new Productos();
+        productosFrame.setVisible(true); // Mostrar el JFrame Productos
+        this.dispose(); // Cerrar el JFrame actual (Tienda)
     }//GEN-LAST:event_ProductosActionPerformed
 
     private void HistorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_HistorialActionPerformed
         // TODO add your handling code here:
+        // Crear una instancia del JFrame Historial
+        Historial historialFrame = new Historial();
+        historialFrame.setVisible(true); // Mostrar el JFrame Historial
+        this.dispose(); // Cerrar el JFrame actual (Tienda)
     }//GEN-LAST:event_HistorialActionPerformed
 
     private void ComprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ComprarActionPerformed
         // TODO add your handling code here:
+        // Crear una instancia del JFrame Comprar
+        Comprar comprarFrame = new Comprar();
+        comprarFrame.setVisible(true); // Mostrar el JFrame Comprar
+        this.dispose(); // Cerrar el JFrame actual (Tienda)
     }//GEN-LAST:event_ComprarActionPerformed
 
     /**

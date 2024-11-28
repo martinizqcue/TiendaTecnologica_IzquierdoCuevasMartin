@@ -4,6 +4,12 @@
  */
 package com.mycompany.tiendatecnologica_izquierdocuevasmartin;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
 /**
  *
  * @author alumno
@@ -15,7 +21,95 @@ public class Usuarios extends javax.swing.JFrame {
      */
     public Usuarios() {
         initComponents();
+        // Hacer la ventana no redimensionable
+        this.setResizable(false);
+        // Establecer el tamaño de la ventana 
+        this.setSize(1000, 600);
+        // Centrar la ventana en la pantalla
+        this.setLocationRelativeTo(null);
+        cargarUsuarios(); // Cargar usuarios en el combo box al iniciar
+        
+        // Configurar el comportamiento al cerrar la ventana
+        this.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        // Agregar un evento de cierre para reabrir Tienda
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                abrirVentanaTienda();
+            }
+        });
     }
+
+    private void abrirVentanaTienda() {
+        // Crear una nueva instancia de Tienda y mostrarla
+        Tienda tiendaFrame = new Tienda();
+        tiendaFrame.setVisible(true);
+    }
+    
+    private void cargarUsuarios() {
+        try (Connection conn = ConexionBBDD.getConnection()) {
+            // Consulta para obtener los nombres de los usuarios
+            String sql = "SELECT nombre FROM usuarios";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            // Vaciar el combo box antes de llenarlo
+            boxUsuarios.removeAllItems();
+
+            // Agregar los nombres de los usuarios al combo box
+            while (rs.next()) {
+                boxUsuarios.addItem(rs.getString("nombre"));
+            }
+
+            rs.close();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mostrarDatosUsuario(String nombreUsuario) {
+    try (Connection conn = ConexionBBDD.getConnection()) {
+        // Consulta para obtener los datos del usuario junto con su dirección
+        String sql = """
+            SELECT u.id, u.nombre, u.email, 
+                   d.calle, d.numero, d.ciudad, d.pais
+            FROM usuarios u
+            LEFT JOIN direccion d ON u.id = d.usuario_id
+            WHERE u.nombre = ?;
+        """;
+
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        stmt.setString(1, nombreUsuario);
+
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            // Construir la información del usuario en un formato legible
+            StringBuilder datosUsuario = new StringBuilder();
+            datosUsuario.append("ID: ").append(rs.getInt("id")).append("\n");
+            datosUsuario.append("Nombre: ").append(rs.getString("nombre")).append("\n");
+            datosUsuario.append("Email: ").append(rs.getString("email")).append("\n\n");
+            datosUsuario.append("Dirección:\n");
+            datosUsuario.append("  Calle: ").append(rs.getString("calle")).append("\n");
+            datosUsuario.append("  Número: ").append(rs.getInt("numero")).append("\n");
+            datosUsuario.append("  Ciudad: ").append(rs.getString("ciudad")).append("\n");
+            datosUsuario.append("  País: ").append(rs.getString("pais")).append("\n");
+
+            // Mostrar los datos en el área de texto
+            TextAreaDatosUsuario.setText(datosUsuario.toString());
+        } else {
+            TextAreaDatosUsuario.setText("No se encontraron datos para el usuario seleccionado.");
+        }
+
+        rs.close();
+        stmt.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -70,49 +164,45 @@ public class Usuarios extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(192, 192, 192)
-                        .addComponent(jLabel1)
-                        .addGap(56, 56, 56)
-                        .addComponent(boxUsuarios, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(295, 295, 295)
-                        .addComponent(usuarios))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(112, 112, 112)
+                        .addGap(207, 207, 207)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(DatosUsuarios)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 575, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(151, Short.MAX_VALUE))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addComponent(jLabel1)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(boxUsuarios, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 575, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(379, 379, 379)
+                        .addComponent(usuarios)))
+                .addContainerGap(217, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(53, 53, 53)
+                .addGap(73, 73, 73)
                 .addComponent(usuarios)
-                .addGap(66, 66, 66)
+                .addGap(46, 46, 46)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(boxUsuarios, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(27, 27, 27)
-                .addComponent(DatosUsuarios)
                 .addGap(18, 18, 18)
+                .addComponent(DatosUsuarios)
+                .addGap(58, 58, 58)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(75, Short.MAX_VALUE))
+                .addContainerGap(118, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 25, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -120,42 +210,16 @@ public class Usuarios extends javax.swing.JFrame {
 
     private void boxUsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxUsuariosActionPerformed
         // TODO add your handling code here:
+        // Obtener el usuario seleccionado
+        String usuarioSeleccionado = (String) boxUsuarios.getSelectedItem();
+
+        // Mostrar los datos si se seleccionó un usuario válido
+        if (usuarioSeleccionado != null && !usuarioSeleccionado.isEmpty()) {
+            mostrarDatosUsuario(usuarioSeleccionado);
+        }
     }//GEN-LAST:event_boxUsuariosActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Usuarios.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Usuarios.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Usuarios.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Usuarios.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Usuarios().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel DatosUsuarios;

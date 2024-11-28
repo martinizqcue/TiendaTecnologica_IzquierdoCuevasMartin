@@ -4,6 +4,18 @@
  */
 package com.mycompany.tiendatecnologica_izquierdocuevasmartin;
 
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+
 /**
  *
  * @author alumno
@@ -15,6 +27,74 @@ public class Productos extends javax.swing.JFrame {
      */
     public Productos() {
         initComponents();
+        // Hacer la ventana no redimensionable
+        this.setResizable(false);
+        // Establecer el tamaño de la ventana 
+        this.setSize(1000, 600);
+        // Centrar la ventana en la pantalla
+        this.setLocationRelativeTo(null);
+
+        // Llenar el ComboBox de categorías al inicializar
+        llenarCategorias();
+
+        // Configurar el comportamiento al cerrar la ventana
+        this.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        // Agregar un evento de cierre para reabrir la ventana Tienda
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                abrirVentanaTienda();
+            }
+        });
+    }
+
+    private void abrirVentanaTienda() {
+        Tienda tiendaFrame = new Tienda();
+        tiendaFrame.setVisible(true);
+    }
+
+    // Método para llenar el ComboBox de categorías
+    private void llenarCategorias() {
+        try (Connection conn = ConexionBBDD.getConnection()) {
+            // Consulta SQL para obtener las categorías
+            String query = "SELECT nombre FROM categorias";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+
+            // Limpiar el ComboBox antes de llenarlo
+            boxCategoria.removeAllItems();
+
+            // Agregar las categorías al ComboBox
+            while (rs.next()) {
+                boxCategoria.addItem(rs.getString("nombre"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Método para llenar el ComboBox de productos según la categoría seleccionada
+    private void llenarProductos(int categoriaId) {
+        try (Connection conn = ConexionBBDD.getConnection()) {
+            // Consulta SQL para obtener los productos de la categoría seleccionada
+            String query = "SELECT nombre FROM productos WHERE categoria_id = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, categoriaId);
+            ResultSet rs = stmt.executeQuery();
+
+            // Limpiar el ComboBox de productos antes de llenarlo
+            boxProductos.removeAllItems();
+
+            // Agregar los productos al ComboBox
+            while (rs.next()) {
+                boxProductos.addItem(rs.getString("nombre"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -34,6 +114,8 @@ public class Productos extends javax.swing.JFrame {
         boxCategoria = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         TextAreaDatosProducto = new javax.swing.JTextArea();
+        jLabelImagen1 = new javax.swing.JLabel();
+        jLabelImagen2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -50,6 +132,11 @@ public class Productos extends javax.swing.JFrame {
         boxProductos.setBackground(new java.awt.Color(0, 153, 153));
         boxProductos.setForeground(new java.awt.Color(204, 255, 204));
         boxProductos.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        boxProductos.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                boxProductosActionPerformed(evt);
+            }
+        });
 
         categoria.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         categoria.setForeground(new java.awt.Color(204, 255, 204));
@@ -75,21 +162,27 @@ public class Productos extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(243, 243, 243)
-                        .addComponent(productos))
+                        .addGap(145, 145, 145)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(56, 56, 56)
+                        .addComponent(jLabelImagen1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabelImagen2))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(122, 122, 122)
+                        .addGap(186, 186, 186)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(SeleccioneProductos)
-                                    .addComponent(categoria))
-                                .addGap(51, 51, 51)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(boxCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(boxProductos, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(180, Short.MAX_VALUE))
+                            .addComponent(categoria)
+                            .addComponent(SeleccioneProductos))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(boxCategoria, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(boxProductos, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(127, 127, 127)))
+                .addGap(93, 93, 93))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(productos)
+                .addGap(367, 367, 367))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -101,27 +194,30 @@ public class Productos extends javax.swing.JFrame {
                     .addComponent(categoria)
                     .addComponent(boxCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(SeleccioneProductos)
                     .addComponent(boxProductos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(107, 107, 107)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabelImagen1)
+                            .addComponent(jLabelImagen2)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(67, 67, 67)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(144, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -129,42 +225,112 @@ public class Productos extends javax.swing.JFrame {
 
     private void boxCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxCategoriaActionPerformed
         // TODO add your handling code here:
+        // Obtener la categoría seleccionada
+        String categoriaSeleccionada = (String) boxCategoria.getSelectedItem();
+
+        // Obtener el ID de la categoría seleccionada y llenar los productos
+        try (Connection conn = ConexionBBDD.getConnection()) {
+            // Consulta para obtener el ID de la categoría seleccionada
+            String query = "SELECT id FROM categorias WHERE nombre = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, categoriaSeleccionada);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int categoriaId = rs.getInt("id");
+                // Llenar los productos de la categoría seleccionada
+                llenarProductos(categoriaId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }//GEN-LAST:event_boxCategoriaActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
+    private void boxProductosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_boxProductosActionPerformed
+        // TODO add your handling code here:
+        // Obtener el producto seleccionado
+        String productoSeleccionado = (String) boxProductos.getSelectedItem();
+
+        // Obtener el ID del producto y mostrar su información
+        try (Connection conn = ConexionBBDD.getConnection()) {
+            // Consulta para obtener el ID del producto seleccionado
+            String query = "SELECT * FROM productos WHERE nombre = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, productoSeleccionado);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Obtener los detalles del producto
+                String nombre = rs.getString("nombre");
+                String descripcion = rs.getString("descripcion");
+                double precio = rs.getDouble("precio");
+                int inventario = rs.getInt("inventario");
+
+                // Mostrar la información en el TextArea
+                String detallesProducto = "Nombre: " + nombre + "\n";
+                detallesProducto += "Descripción: " + descripcion + "\n";
+                detallesProducto += "Precio: " + precio + " €\n";
+                detallesProducto += "Inventario: " + inventario + " unidades\n";
+
+                TextAreaDatosProducto.setText(detallesProducto);
+
+                // Cargar y mostrar las imágenes del producto
+                mostrarImagenesProducto(rs.getInt("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_boxProductosActionPerformed
+
+    private void mostrarImagenesProducto(int productoId) {
+        try (Connection conn = ConexionBBDD.getConnection()) { // ConexionBBDD.getConnection() debe devolver la conexión a la base de datos
+            String query = "SELECT url FROM imagenes WHERE producto_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(query)) {
+                stmt.setInt(1, productoId);
+                try (ResultSet rs = stmt.executeQuery()) {
+
+                    // Limpiar los JLabels antes de mostrar nuevas imágenes
+                    jLabelImagen1.setIcon(null);
+                    jLabelImagen2.setIcon(null);
+
+                    int contador = 1;
+                    while (rs.next()) {
+                        String urlImagen = rs.getString("url");
+
+                        // Verifica que la URL de la imagen no sea nula o vacía
+                        if (urlImagen != null && !urlImagen.isEmpty()) {
+                            // Aquí se asume que la imagen está en la carpeta 'Imagenes' dentro del proyecto
+                            File archivoImagen = new File(urlImagen); // Usar la URL directamente desde la base de datos
+
+                            // Verificar si el archivo existe
+                            if (archivoImagen.exists()) {
+                                ImageIcon imagen = new ImageIcon(archivoImagen.getAbsolutePath());
+
+                                // Redimensionar la imagen a un tamaño fijo (ajusta el tamaño a tus necesidades)
+                                Image imagenRedimensionada = imagen.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+                                ImageIcon imagenRedimensionadaIcon = new ImageIcon(imagenRedimensionada);
+
+                                // Asignar la imagen redimensionada al JLabel correspondiente
+                                if (contador == 1) {
+                                    jLabelImagen1.setIcon(imagenRedimensionadaIcon);
+                                } else if (contador == 2) {
+                                    jLabelImagen2.setIcon(imagenRedimensionadaIcon);
+                                }
+                                contador++;
+                            } else {
+                                System.out.println("Error: la imagen no se encuentra en la ruta: " + urlImagen);
+                            }
+                        }
+                    }
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Productos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Productos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Productos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Productos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Productos().setVisible(true);
-            }
-        });
     }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel SeleccioneProductos;
@@ -172,6 +338,8 @@ public class Productos extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> boxCategoria;
     private javax.swing.JComboBox<String> boxProductos;
     private javax.swing.JLabel categoria;
+    private javax.swing.JLabel jLabelImagen1;
+    private javax.swing.JLabel jLabelImagen2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel productos;
